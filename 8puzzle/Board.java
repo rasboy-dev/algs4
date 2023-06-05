@@ -6,9 +6,6 @@
 
 import edu.princeton.cs.algs4.Stack;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class Board {
 
     private final int[][] board;
@@ -22,7 +19,6 @@ public class Board {
         this.dimension = tiles.length;
         this.board = new int[dimension][dimension];
         int maxTile = dimension * dimension - 1;
-        Set<Integer> tilesSet = new HashSet<>();
         for (int i = 0; i < dimension; i++) {
             for (int j = 0; j < dimension; j++) {
                 int tile = tiles[i][j];
@@ -30,11 +26,7 @@ public class Board {
                 if (tile < 0 || tile > maxTile)
                     throw new IllegalArgumentException(
                             "tile " + tile + " is not in the range 0 .. n^2 - 1");
-                if (tilesSet.contains(tile))
-                    throw new IllegalArgumentException(
-                            "tile " + tile + " is included more than once");
 
-                tilesSet.add(tile);
                 board[i][j] = tile;
                 if (tile == 0) {
                     emptyRow = i;
@@ -101,7 +93,8 @@ public class Board {
         for (int i = 0; i < dimension; i++) {
             int firstInRow = i * dimension + 1;
             for (int j = 0; j < dimension; j++) {
-                if (i != dimension - 1 && j != dimension - 1)
+                boolean isBottomRight = i == dimension - 1 && j == dimension - 1;
+                if (!isBottomRight)
                     if (board[i][j] != firstInRow + j)
                         return false;
             }
@@ -112,7 +105,7 @@ public class Board {
     // does this board equal y?
     public boolean equals(Object y) {
         Board that;
-        if (y instanceof Board) {
+        if (y.getClass() == Board.class) {
             that = (Board) y;
         }
         else {
@@ -154,6 +147,19 @@ public class Board {
         return new Board(tiles);
     }
 
+    // a board that is obtained by exchanging any pair of tiles
+    public Board twin() {
+        int[][] tiles = copyArray(board);
+        int i = 0, j = 0;
+        if (tiles[i][j] == 0)
+            j = dimension - 1;
+        int i1 = dimension - 1, j1 = 0;
+        if (tiles[i1][j1] == 0)
+            j1 = dimension - 1;
+        swap(tiles, i, j, i1, j1);
+        return new Board(tiles);
+    }
+
     private static int[][] copyArray(int[][] arr) {
         int[][] copy = new int[arr.length][arr.length];
         for (int i = 0; i < arr.length; i++) {
@@ -170,12 +176,7 @@ public class Board {
         arr[i][j] = arr[i][j] - arr[l][k];
     }
 
-    // a board that is obtained by exchanging any pair of tiles
-    public Board twin() {
-        return null;
-    }
-
-    // unit testing (not graded)
+    // unit testing
     public static void main(String[] args) {
         int[][] tiles1 = { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 0 } };
         int[][] tiles2 = { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 } };
